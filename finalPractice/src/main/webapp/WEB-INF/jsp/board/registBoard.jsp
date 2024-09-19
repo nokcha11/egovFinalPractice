@@ -44,13 +44,51 @@ var deleteFiles = new Array();
 		$("#btn_list").on('click', function(){
 			location.href="/board/boardList.do";
 		});
-
+	
+	
+	});
 	function fn_detail(boardIdx){
-
+		$.ajax({
+		    url: '/board/getBoardDetail.do',
+		    method: 'post',
+		    data : { "boardIdx" : boardIdx},
+		    dataType : 'json',
+		    success: function (data, status, xhr) {
+				$("#boardTitle").val(data.boardInfo.boardTitle);
+				$("#boardContent").val(data.boardInfo.boardContent);
+				fn_fileList(data.boardInfo.fileGroupIdx);
+		    },
+		    error: function (data, status, err) {
+		    	console.log(err);
+		    }
+		});
 	}
 	
 	function fn_save(){
+		var formData = new FormData($("#saveFrm")[0]);
 		
+		
+
+		$.ajax({
+		    url: '/board/saveBoard.do',
+		    method: 'post',
+		    data : formData,
+		    enctype : "multipart/form-data",
+		    processData : false,
+		    contentType : false, 
+		    dataType : 'json',
+		    success: function (data, status, xhr) {
+		    	if(data.resultChk > 0){
+		    		alert("저장되었습니다.");
+		    		location.href="/board/boardList.do";
+		    	}else{
+		    		alert("저장에 실패하였습니다.");
+		    	}
+		    },
+		    error: function (data, status, err) {
+		    	console.log(err);
+		    }
+		});
 	}
 </script>
 </head>

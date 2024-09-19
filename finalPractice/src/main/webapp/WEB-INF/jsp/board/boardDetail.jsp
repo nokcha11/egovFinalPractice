@@ -45,10 +45,33 @@
 		$("#btn_reply_save").on('click', function(){
 			fn_comment();
 		});
+		
+		$("#btn_reply_delete").on('click', function(){
+			fn_replyDelete();
+		});
+		
 	});
 	
 	function fn_delete(){
-	
+
+		var boardIdx3 = $("#boardIdx").val();
+		$.ajax({
+		    url: '/board/deleteBoard.do',
+		    method: 'post',
+		    data : { "boardIdx" : boardIdx3},
+		    dataType : 'json',
+		    success: function (data, status, xhr) {
+		    	if(data.resultChk > 0){
+		    		alert("삭제되었습니다.");
+		    		location.href="/board/boardList.do";
+		    	}else{
+		    		alert("삭제에 실패하였습니다.");
+		    	}
+		    },
+		    error: function (data, status, err) {
+		    	console.log(err);
+		    }
+		});
 	}
 	
 	function fn_getReply(boardIdx){
@@ -79,7 +102,8 @@
 			    		replyHtml += '<a href="javascript:fn_replyInsert(\''+data.replyList[i].replyIdx+'\');" style="float:right;">';
 			    		replyHtml += '답글달기';
 			    		replyHtml += '</a><br>';
-			    		replyHtml += '<a href="javascript:fn_replyDelete(\''+data.replyList[i].replyIdx+'\');" style="float:right;">';
+			    		// boardIdx 값 주기 방법1 , \'' + boardIdx + '\' 추가해서 더하기
+			    		replyHtml += '<a href="javascript:fn_replyDelete(\'' + data.replyList[i].replyIdx + '\', \'' + boardIdx + '\');" style="float:right;">';
 			    		replyHtml += '삭제';
 			    		replyHtml += '</a>';
 			    		replyHtml += '</span></br>';
@@ -98,19 +122,89 @@
 	}
 	
 	function fn_replyInsert(replyIdx){
-		
+		var innerHtml = '';
+		innerHtml+='<input type="text" id="replyContent_'+replyIdx+'" name="replyContent_'+replyIdx+'" "placeholder="답글을 입력하세요." value=""/>';
+		innerHtml+='<input type="button" id="replyInsert_'+replyIdx+'" name="replyInsert_'+replyIdx+'" value="등록" onclick="javascript:fn_replyInsertSave(\''+replyIdx+'\');"/>';
+		$("#reply_"+replyIdx).append(innerHtml);
 	}
 	
 	function fn_replyInsertSave(replyIdx){
-		
+		var boardIdx = $("#boardIdx").val();
+		var replyContent = $("#replyContent_"+replyIdx).val();
+		$.ajax({
+		    url: '/board/saveBoardReply.do',
+		    method: 'post',
+		    data : { 
+		    	"boardIdx" : boardIdx,
+		    	"replyIdx" : replyIdx,
+		    	"replyContent" : replyContent
+		    },
+		    dataType : 'json',
+		    success: function (data, status, xhr) {
+		    	if(data.resultChk > 0){
+		    		alert("등록되었습니다.");
+		    		fn_getReply(boardIdx);
+		    	}else{
+		    		alert("등록에 실패하였습니다.");
+		    	}
+		    },
+		    error: function (data, status, err) {
+		    	console.log(status);
+		    }
+		});
 	}
 	
 	function fn_comment(){
-		
+		var boardIdx = $("#boardIdx").val();
+		var replyContent = $("#replyContent").val();
+		$.ajax({
+		    url: '/board/saveBoardReply.do',
+		    method: 'post',
+		    data : { 
+		    	"boardIdx" : boardIdx,
+		    	"replyContent" : replyContent
+		    },
+		    dataType : 'json',
+		    success: function (data, status, xhr) {
+		    	if(data.resultChk > 0){
+		    		alert("등록되었습니다.");
+		    		fn_getReply(boardIdx);
+		    	}else{
+		    		alert("등록에 실패하였습니다.");
+		    	}
+		    },
+		    error: function (data, status, err) {
+		    	console.log(status);
+		    }
+		});
 	}
 	
-	function fn_replyDelete(replyIdx){
+	// boardIdx 값 주기 방법1 -> fn_replyDelete(replyIdx,boardIdx)
+	function fn_replyDelete(replyIdx,boardIdx){
+		//boardIdx 값 주기 방법2 var boardIdx = $("#boardIdx").val();
+
 		
+		$.ajax({
+		    url: '/board/deleteBoardReply.do',
+		    method: 'post',
+		    data : { 
+		    	//"boardIdx" : boardIdx, 값을 안 넣어줘도 무방
+		    	"replyIdx" : replyIdx
+		    },
+		    dataType : 'json',
+		    success: function (data, status, xhr) {
+		    	if(data.resultChk > 0){
+		    		alert("삭제되었습니다.");
+		    		
+		    		fn_getReply(boardIdx);
+		    	}else{
+		    		alert("삭제에 실패하였습니다.");
+		    	}
+		    },
+		    error: function (data, status, err) {
+		    	console.log(status);
+		    }
+		});
 	}
 	
 
@@ -178,7 +272,7 @@
 		</c:if>
 	</div>
 	<div style="width:100%; margin:0px 0px 0px 9%;">
-		<h4>댓글</h4>hj
+		<h4>댓글</h4>
 		<input type="text" id="replyContent" name="replyContent" style="width:87%; margin:0 0px 10px 0px;" placeholder="댓글을 입력해주세요."/>
 		<input type="button" id="btn_reply_save" name="btn_reply_save" value="등록"/>
 	</div>

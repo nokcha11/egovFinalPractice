@@ -42,7 +42,7 @@ public class BoardDAO extends EgovAbstractMapper{
 		return selectList("selectBoardReply", paramMap);
 	}
 	
-	public int deleteBoardReply(int replyIdx) {
-		return update("deleteReply", replyIdx);
+	public int deleteBoardReply(HashMap<String, Object> paramMap) {
+		return update("deleteReply", paramMap);
 	}
 }

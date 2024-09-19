@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import egovframework.com.board.service.BoardService;
 import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
@@ -29,10 +30,20 @@ public class BoardServiceImpl extends EgovAbstractServiceImpl implements BoardSe
 	}
 
 	@Override
-	public int saveBoard(HashMap<String, Object> paramMap) {
+	public int saveBoard(HashMap<String, Object> paramMap, List<MultipartFile> multipartFile) {
 		// TODO Auto-generated method stub
 		int resultChk = 0;
 	
+		String flag = paramMap.get("statusFlag").toString();
+		
+		
+		if ("I".equals(flag)) {
+			resultChk = boardDAO.insertBoard(paramMap);
+			
+		} else if ("U".equals(flag)){
+			resultChk = boardDAO.updateBoard(paramMap);
+			
+	}
 		return resultChk;
 	}
 
@@ -61,9 +72,9 @@ public class BoardServiceImpl extends EgovAbstractServiceImpl implements BoardSe
 	}
 
 	@Override
-	public int deleteReply(int replyIdx) {
+	public int deleteReply(HashMap<String, Object> paramMap) {
 		// TODO Auto-generated method stub
-		return boardDAO.deleteBoardReply(replyIdx);
+		return boardDAO.deleteBoardReply(paramMap);
 	}
 	
 }
