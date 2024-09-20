@@ -23,7 +23,7 @@
 </style>
 <script type="text/javascript">
 	$(document).ready(function(){
-		
+		fn_getFileList(); 
 		fn_getReply("${boardInfo.boardIdx}");
 		
 		$("#btn_update").on('click', function(){
@@ -46,9 +46,6 @@
 			fn_comment();
 		});
 		
-		$("#btn_reply_delete").on('click', function(){
-			fn_replyDelete();
-		});
 		
 	});
 	
@@ -208,6 +205,41 @@
 	}
 	
 
+	function fn_getFileList(){
+		// /board/getFileList.do
+			var fileGroupIdx = "${boardInfo.fileGroupIdx}";
+		$.ajax({
+		    url: '/board/getFileList.do',
+		    method: 'post',
+		    data : { 
+		    	"fileGroupIdx" : fileGroupIdx
+		    },
+		    dataType : 'json',
+		    success: function (data, status, xhr) {
+		    	var innerHtml = '';
+		    	for(var i=0; i<data.fileList.length; i++){
+		    		innerHtml += '<span>';
+		    		innerHtml += '<a href="javascript:fn_down(\''+data.fileList[i].saveFilePath+'\',\''+data.fileList[i].saveFileName+'\');">';
+			    	innerHtml += data.fileList[i].fileOriginalName;
+			    	innerHtml += '</a></span><br>';	
+		    	}
+		    	$("#boardFileList").html(innerHtml);
+		    },
+		    error: function (data, status, err) {
+		    	console.log(status);
+		    }
+		});
+	}
+	
+	function fn_down(filePath, fileName){
+		$("#fileName").val(fileName);
+		$("#filePath").val(filePath)
+		var frm = $("#fileFrm");
+		frm.attr("action", "/board/getFileDown.do");
+		frm.submit();
+	}
+	
+
 </script>
 </head>
 <body>
@@ -258,6 +290,10 @@
 						<td>
 							<input type="text" class="text" id="updateDate" name="updateDate" value="${boardInfo.updateDate }" readonly />
 						</td>
+					</tr>
+					<tr>
+						<th>첨부파일</th>
+						<td><div id="boardFileList" name="boardFileList"></div></td>
 					</tr>
 				</tbody>
 				

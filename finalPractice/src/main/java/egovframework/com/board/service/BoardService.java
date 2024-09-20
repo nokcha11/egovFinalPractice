@@ -22,5 +22,7 @@ public interface BoardService {
 	public List<HashMap<String, Object>> selectBoardReply(HashMap<String, Object> paramMap);
 	
 	public int deleteReply(HashMap<String, Object> paramMap);
+	
+	public List<HashMap<String, Object>> selectFileList(int fileGroupIdx);
 
 }

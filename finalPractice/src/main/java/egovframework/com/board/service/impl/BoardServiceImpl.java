@@ -1,10 +1,14 @@
 package egovframework.com.board.service.impl;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,16 +39,65 @@ public class BoardServiceImpl extends EgovAbstractServiceImpl implements BoardSe
 		int resultChk = 0;
 	
 		String flag = paramMap.get("statusFlag").toString();
-		
+		int fileGroupIdx = 0;
 		
 		if ("I".equals(flag)) {
 			resultChk = boardDAO.insertBoard(paramMap);
-			
+			fileGroupIdx = boardDAO.getFileGroupMaxIdx();
+
 		} else if ("U".equals(flag)){
 			resultChk = boardDAO.updateBoard(paramMap);
+			fileGroupIdx = boardDAO.getFileGroupIdx(paramMap);
+
+			if (paramMap.get("deleteFiles") != null) {
+				resultChk = boardDAO.deleteFileAttr(paramMap);
+				
+			}
+		}
+			String filePath = "/ictsaeil/egovTest";
+			int index = 0;
 			
-	}
-		return resultChk;
+			if (multipartFile.size() > 0 && !multipartFile.get(0).getOriginalFilename().equals("")) {
+				// MultipartFile file = multipartFile.get(0);
+				for (MultipartFile file : multipartFile) {
+					SimpleDateFormat date = new SimpleDateFormat("yyyyMMddHms");
+					// Calendar에서 현재 시간을 가져옴
+					Calendar cal = Calendar.getInstance();
+					// cal 변수로 가져온 현재 시간을 "yyyyMMddHms" 형태로 변환
+					String today = date.format(cal.getTime());
+					
+					try {
+						File fileFolder = new File(filePath);
+						if (!fileFolder.exists()) {
+							if (fileFolder.mkdirs()) {
+								// mkdirs() : 폴더를 생성해주는 메소드, 상위 폴더가 없으면 상위 폴더까지 생성 <-> mkdir() : 상위 폴더 없으면 하위 폴더 생성 안됨						
+								System.out.println("[file.mkdirs] : Success");
+							}
+						}
+						// fileExt : 파일의 확장자만 뽑아내기
+						
+						String fileExt = FilenameUtils.getExtension(file.getOriginalFilename());
+						// 파일 생성
+						// multipartFile로 받아온 file을 saveFile로 바꿔주기
+						
+						File saveFile = new File(filePath, "file_"+today+"_"+index+"."+fileExt); 
+						file.transferTo(saveFile);
+						HashMap<String, Object> uploadFile =  new HashMap<String, Object>();
+						uploadFile.put("fileGroupIdx", fileGroupIdx);
+						uploadFile.put("originalFileName", file.getOriginalFilename());
+						uploadFile.put("saveFileName", "file_"+today+"_"+index+"."+fileExt);
+						uploadFile.put("saveFilePath", filePath);
+						uploadFile.put("fileSize", file.getSize());
+						uploadFile.put("fileExt", fileExt);
+						uploadFile.put("memberId", paramMap.get("memberId").toString());
+						resultChk = boardDAO.insertFileAttr(uploadFile);
+						index++;
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			return resultChk;
 	}
 
 	@Override
@@ -75,6 +128,12 @@ public class BoardServiceImpl extends EgovAbstractServiceImpl implements BoardSe
 	public int deleteReply(HashMap<String, Object> paramMap) {
 		// TODO Auto-generated method stub
 		return boardDAO.deleteBoardReply(paramMap);
+	}
+
+	@Override
+	public List<HashMap<String, Object>> selectFileList(int fileGroupIdx) {
+		// TODO Auto-generated method stub
+		return boardDAO.selectFileList(fileGroupIdx);
 	}
 	
 }
